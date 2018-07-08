@@ -1,0 +1,56 @@
+﻿
+        <!--ARTHACHITRA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE CODE FOR ANY 
+        PURPOSE. IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY KIND. ARTHACHITRA DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOURCE CODE, 
+        INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL ARTHACHITRA BE LIABLE FOR ANY 
+        SPECIAL, INDIRECT, INCEDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION, ARISING 
+        OUT OF OR IN CONNECTION WITH THE USE OR PERFORMACE OF THIS SOURCE CODE.-->
+
+<Window x:Class="TestApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TestApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="btvc" />
+    </Window.Resources>
+    <TabControl SelectedIndex="{Binding SelectedTab}">
+        <TabItem Header="Login">
+            <WebBrowser Loaded="WebBrowser_Loaded" Navigating="WebBrowser_Navigating" Navigated="WebBrowser_Navigated" />
+        </TabItem>
+        <TabItem Header="Test">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="2"  Click="Button_Click" Content="Get metrics" Margin="5" />
+                <Button Grid.Row="1" Content="{Binding ConnectStr}" Click="Button_Connect" Margin="5" ToolTip="Connect to websocket" />
+
+                <Button Grid.Row="2" Grid.Column="1" Content="Subscribe RT" Click="Button_SubscribeRT" Margin="5" />
+
+                <Button Grid.Row="3" Content="Buy" Click="Button_Buy" Margin="5" />
+                <Button Grid.Row="3" Grid.Column="1" Content="Modify" Click="Button_Modify" Margin="5" />
+                <Button Grid.Row="3" Grid.Column="2" Content="Cancel" Click="Button_Cancel" Margin="5" />
+
+            </Grid>
+        </TabItem>
+        <TabItem Header="Logs">
+            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+                <ItemsControl ItemsSource="{Binding Logs}" />
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
+</Window>

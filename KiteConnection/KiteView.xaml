@@ -1,0 +1,167 @@
+﻿ 
+        <!--ARTHACHITRA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE CODE FOR ANY 
+        PURPOSE. IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY KIND. ARTHACHITRA DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOURCE CODE, 
+        INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL ARTHACHITRA BE LIABLE FOR ANY 
+        SPECIAL, INDIRECT, INCEDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION, ARISING 
+        OUT OF OR IN CONNECTION WITH THE USE OR PERFORMACE OF THIS SOURCE CODE.-->
+
+<bCommon:WindowBase x:Class="KiteConnection.KiteView"
+       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:bControls="clr-namespace:SharpCharts.Base.Controls;assembly=SharpCharts.Base"
+        xmlns:bCommon="clr-namespace:SharpCharts.Base.Common;assembly=SharpCharts.Base"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KiteConnection"
+        mc:Ignorable="d"
+        Title="{Binding ViewTitle}" Height="600" Width="800" WindowStartupLocation="CenterScreen" Topmost="{Binding Topmost}" >
+    <i:Interaction.Behaviors>
+        <bCommon:CloseBehaviour HasClosed="{Binding IsClosed}" />
+    </i:Interaction.Behaviors>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <bCommon:InvokeDelegateCommandAction Command="{Binding ClosingCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=InvokeParameter}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closed">
+            <i:InvokeCommandAction Command="{Binding ClosedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Menu>
+            <MenuItem Header="Refresh" >
+                <MenuItem Header="Orders" Command="{Binding RefreshCommand}" CommandParameter="Orders" />
+                <MenuItem Header="Trades" Command="{Binding RefreshCommand}" CommandParameter="Trades" />
+                <MenuItem Header="Positions" Command="{Binding RefreshCommand}" CommandParameter="Positions" />
+                <MenuItem Header="Holdings" Command="{Binding RefreshCommand}" CommandParameter="Holdings" />
+                <MenuItem Header="Accounts" Command="{Binding RefreshCommand}" CommandParameter="Accounts" />
+            </MenuItem>
+        </Menu>
+
+        <WebBrowser Grid.Row="1" Margin="3"  bCommon:WebBrowserHelper.Url="{Binding Url}" Visibility="{Binding IsVisible, Converter={StaticResource ResourceKey={x:Static bCommon:ResourceKey.BTVC}}}" >
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Loaded">
+                    <i:InvokeCommandAction Command="{Binding WbLoadedCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type WebBrowser}}}" />
+                </i:EventTrigger>
+                <i:EventTrigger EventName="Navigating">
+                    <bCommon:InvokeDelegateCommandAction Command="{Binding WbNavigatingCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=InvokeParameter}" />
+                </i:EventTrigger>
+                <i:EventTrigger EventName="LoadCompleted">
+                    <bCommon:InvokeDelegateCommandAction Command="{Binding WbLoadCompletedCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=InvokeParameter}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </WebBrowser>
+
+        <TabControl Grid.Row="1" Visibility="{Binding IsVisible, Converter={StaticResource ResourceKey={x:Static bCommon:ResourceKey.ReverseBTVC}}}" Background="Transparent">
+            <TabItem Header="Orders">
+                <DataGrid ItemsSource="{Binding KiteOrders}" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" GridLinesVisibility="Horizontal" 
+                            SelectionMode="Single" AutoGenerateColumns="False" IsReadOnly="True" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Instruments" Binding="{Binding tradingsymbol}" />
+                        <DataGridTextColumn Header="Exchange" Binding="{Binding exchange}" />
+                        <DataGridTextColumn Header="Order Action" Binding="{Binding transaction_type}" />
+                        <DataGridTextColumn Header="Order State" Binding="{Binding status}" />
+
+                        <DataGridTextColumn Header="Order Type" Binding="{Binding order_type}" />
+                        <DataGridTextColumn Header="Quantity" Binding="{Binding quantity}" />
+                        <DataGridTextColumn Header="Filled Quantity" Binding="{Binding filled_quantity}" />
+                        <DataGridTextColumn Header="Pending Quantity" Binding="{Binding pending_quantity}" />
+                        <DataGridTextColumn Header="Cancelled Quantity" Binding="{Binding cancelled_quantity}" />
+
+                        <DataGridTextColumn Header="Limit Price" Binding="{Binding price}" />
+                        <DataGridTextColumn Header="Stop Price" Binding="{Binding trigger_price}" />
+                        <DataGridTextColumn Header="Avg Fill Price" Binding="{Binding average_price}" />
+
+                        <DataGridTextColumn Header="Product" Binding="{Binding product}" />
+
+                        <DataGridTextColumn Header="Variety" Binding="{Binding variety}" />
+                        <DataGridTextColumn Header="TIF" Binding="{Binding validity}" />
+                        <DataGridTextColumn Header="Time" Binding="{Binding order_timestamp}" />
+                        <DataGridTextColumn Header="Id" Binding="{Binding tag}" />
+                        <DataGridTextColumn Header="Order Id" Binding="{Binding order_id}" />
+                        <DataGridTextColumn Header="Remarks" Binding="{Binding status_message}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Trades">
+                <DataGrid ItemsSource="{Binding KiteTrades}" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" GridLinesVisibility="Horizontal" 
+                        SelectionMode="Single" AutoGenerateColumns="False" IsReadOnly="True" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Instruments" Binding="{Binding tradingsymbol}" />
+                        <DataGridTextColumn Header="Exchange" Binding="{Binding exchange}" />
+                        <DataGridTextColumn Header="Order Action" Binding="{Binding transaction_type}" />
+                        <DataGridTextColumn Header="Filled Quantity" Binding="{Binding quantity}" />
+                        <DataGridTextColumn Header="Avg Fill Price" Binding="{Binding average_price}" />
+                        <DataGridTextColumn Header="Product" Binding="{Binding product}" />
+                        <DataGridTextColumn Header="Time" Binding="{Binding order_timestamp}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </TabItem>
+
+            <TabItem Header="Positions">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <DataGrid ItemsSource="{Binding KitePositions}" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" GridLinesVisibility="Horizontal" 
+                            SelectionMode="Single" AutoGenerateColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedPosition}" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Instruments" Binding="{Binding tradingsymbol}" />
+                            <DataGridTextColumn Header="Exchange" Binding="{Binding exchange}" />
+                            <DataGridTextColumn Header="Quantity" Binding="{Binding quantity}" />
+                            <DataGridTextColumn Header="Avg Fill Price" Binding="{Binding average_price, StringFormat=0.######}" />
+                            <DataGridTextColumn Header="Product" Binding="{Binding product}" /> 
+                            <DataGridTextColumn Header="Realized PnL" Binding="{Binding realised}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" >
+                        <ComboBox Margin="5" MinWidth="80"  ItemsSource="{Binding PositionTypes}" SelectedItem="{Binding PositionType}" ToolTip="Position Type"/>
+                        <ComboBox Margin="5" MinWidth="80"  ItemsSource="{Binding Products}" SelectedItem="{Binding NewProduct}" ToolTip="Product" />
+                        <bControls:IntegerUpDown Margin="5" MinWidth="80"  Value="{Binding ConvertQuantity}" Increment="1" Minimum="1" ToolTip="Quantity" />
+                        <Button Margin="5" Content="Convert" MinWidth="80"  Command="{Binding ConvertCommand}" />
+                    </StackPanel>
+                </Grid>
+
+            </TabItem>
+            <TabItem Header="Holdings">
+                <DataGrid ItemsSource="{Binding KiteHoldings}" CanUserAddRows="False" CanUserDeleteRows="False" GridLinesVisibility="Horizontal"
+                          SelectionMode="Single" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Instruments" Binding="{Binding tradingsymbol}" />
+                        <DataGridTextColumn Header="Exchange" Binding="{Binding exchange}" />
+                        <DataGridTextColumn Header="Quantity" Binding="{Binding quantity}" />
+                        <DataGridTextColumn Header="T1 Quantity" Binding="{Binding t1_quantity}" />
+                        <DataGridTextColumn Header="Avg price" Binding="{Binding average_price}" />
+                        <DataGridTextColumn Header="Product" Binding="{Binding product}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Accounts">
+                <DataGrid ItemsSource="{Binding KiteFunds}" CanUserAddRows="False" CanUserDeleteRows="False" GridLinesVisibility="Horizontal" 
+                            SelectionMode="Single" AutoGenerateColumns="False" IsReadOnly="True" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Segment" Binding="{Binding Segment}" />
+                        <DataGridTextColumn Header="Net" Binding="{Binding Funds.net}" />
+                        <DataGridTextColumn Header="Cash" Binding="{Binding Funds.available.cash}" />
+                        <DataGridTextColumn Header="Realized PnL" Binding="{Binding Funds.utilised.m2m_realised}" />
+                        
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+
+        <bControls:BusyUserControl Grid.Row="1" IsBusy="{Binding IsBusy}" Text="{Binding BusyText}" Visibility="{Binding IsBusy, Converter={StaticResource ResourceKey={x:Static bCommon:ResourceKey.BTVC}}}" />
+    </Grid>
+</bCommon:WindowBase>
+

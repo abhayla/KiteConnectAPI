@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9E588254-AB09-4767-8C07-BEBDBDA43376}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KiteConnectAPI</RootNamespace>
+    <AssemblyName>KiteConnectAPI</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="SuperSocket.ClientEngine">
+      <HintPath>..\packages\SuperSocket.ClientEngine.Core.0.10.0\lib\net45\SuperSocket.ClientEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WebSocket4Net">
+      <HintPath>..\packages\WebSocket4Net.0.15.2\lib\net45\WebSocket4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="KiteConnectAPI\BinaryQuotes.cs" />
+    <Compile Include="KiteConnectAPI\Candle.cs" />
+    <Compile Include="KiteConnectAPI\Depth.cs" />
+    <Compile Include="KiteConnectAPI\DepthItem.cs" />
+    <Compile Include="KiteConnectAPI\Enum.cs" />
+    <Compile Include="KiteConnectAPI\Funds.cs" />
+    <Compile Include="KiteConnectAPI\Holding.cs" />
+    <Compile Include="KiteConnectAPI\LtpQuotes.cs" />
+    <Compile Include="KiteConnectAPI\MfSymbol.cs" />
+    <Compile Include="KiteConnectAPI\OHLCQuotes.cs" />
+    <Compile Include="KiteConnectAPI\Payload.cs" />
+    <Compile Include="KiteConnectAPI\Postback.cs" />
+    <Compile Include="KiteConnectAPI\Exception.cs" />
+    <Compile Include="KiteConnectAPI\Symbol.cs" />
+    <Compile Include="KiteConnectAPI\KiteClientWebSocket.cs" />
+    <Compile Include="KiteConnectAPI\Login.cs" />
+    <Compile Include="KiteConnectAPI\Margins.cs" />
+    <Compile Include="KiteConnectAPI\Message.cs" />
+    <Compile Include="KiteConnectAPI\MfHolding.cs" />
+    <Compile Include="KiteConnectAPI\MfInstrument.cs" />
+    <Compile Include="KiteConnectAPI\MfOrder.cs" />
+    <Compile Include="KiteConnectAPI\MfSip.cs" />
+    <Compile Include="KiteConnectAPI\OHLC.cs" />
+    <Compile Include="KiteConnectAPI\Order.cs" />
+    <Compile Include="KiteConnectAPI\OrderId.cs" />
+    <Compile Include="KiteConnectAPI\OrderPostback.cs" />
+    <Compile Include="KiteConnectAPI\Parameter.cs" />
+    <Compile Include="KiteConnectAPI\Position.cs" />
+    <Compile Include="KiteConnectAPI\PositionItem.cs" />
+    <Compile Include="KiteConnectAPI\PostbackEventArgs.cs" />
+    <Compile Include="KiteConnectAPI\Kite.cs" />
+    <Compile Include="KiteConnectAPI\QuoteEventArgs.cs" />
+    <Compile Include="KiteConnectAPI\Quotes.cs" />
+    <Compile Include="KiteConnectAPI\Response.cs" />
+    <Compile Include="KiteConnectAPI\SocketStateEventArgs.cs" />
+    <Compile Include="KiteConnectAPI\SymbolBase.cs" />
+    <Compile Include="KiteConnectAPI\Trade.cs" />
+    <Compile Include="KiteConnectAPI\Url.cs" />
+    <Compile Include="KiteConnectAPI\IKiteLogger.cs" />
+    <Compile Include="KiteConnectAPI\KiteWebSocket.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
