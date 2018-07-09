@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("KiteConnectAPI")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription(".Net client of the Kite Connect API")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("ArthaChitra Trading Pvt. Ltd.")]
 [assembly: AssemblyProduct("KiteConnectAPI")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

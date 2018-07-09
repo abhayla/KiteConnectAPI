@@ -585,7 +585,7 @@ namespace KiteConnection
                 if (!isAddedToList && args.Order.status == "UPDATE" && args.Order.filled_quantity == 0)
                     return;
 
-                //Order may get filled, however an stale postback (with state == Open) may come through
+                //Order may get filled, however an stale postback may come through
                 if (!isAddedToList && order.IsClosed)
                     return;
                                

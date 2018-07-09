@@ -8,9 +8,9 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("TestApp")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Test App for tesing the Kite Connect API")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("ArthaChitra Trading Pvt. Ltd.")]
 [assembly: AssemblyProduct("TestApp")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
