@@ -585,6 +585,9 @@ namespace KiteConnection
                 if (!isAddedToList && args.Order.status == "UPDATE" && args.Order.filled_quantity == 0)
                     return;
 
+                //Order may get filled, however an stale postback (with state == Open) may come through
+                if (!isAddedToList && order.IsClosed)
+                    return;
                                
                 OrderState orderState = ToOrderState(args.Order.status, args.Order.filled_quantity);
                 ExternalConnectionBase.UpdateOrder(order, ParseTime(args.Order.order_timestamp), orderState, ToQuantity(args.Order.filled_quantity, symbol.lot_size),
