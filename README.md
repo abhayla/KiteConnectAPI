@@ -88,5 +88,5 @@ private void OnQuotes(QuoteEventArgs args)
 }
 ```
 
-While a basic usage is demonstrated in the [Test App](TestApp) along with this project, including the oAuth login flow, a detailed implementation can be found in [Kite Connect](KiteConnect) project. The Kite Connect project is part of the [external connection](http://www.arthachitra.com/support/ac1/Help/html/81a233b3-ab6f-487b-833a-a0b81fe5b51d.htm) and connects to our standalone charting and trading platform [ArthaChitra](http://www.arthachitra.com). For more details regarding the Kite Conection Connection please refer [here](http:www.arthachitra.com)
+While a basic usage is demonstrated in the [Test App](TestApp) along with this project, including the oAuth login flow, a detailed implementation can be found in [Kite Connect](KiteConnect) project. The Kite Connect project is part of the [external connection](http://www.arthachitra.com/support/ac1/Help/html/81a233b3-ab6f-487b-833a-a0b81fe5b51d.htm) and connects to our standalone charting and trading platform [ArthaChitra](http://www.arthachitra.com). For more details regarding the Kite Conection Connection please refer [here](http://www.arthachitra.com/support/forum/viewtopic.php?f=28&t=61)
 
