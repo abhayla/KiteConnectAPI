@@ -64,6 +64,17 @@ namespace KiteConnectAPI
         public double adhoc_margin { get; set; }
 
         /// <summary>
+        /// Gets or sets the opening balance
+        /// </summary>
+        [DataMember(Name = "opening_balance")]
+        public double opening_balance { get; set; }
+
+        //Gets or sets the live balance
+        [DataMember(Name = "live_balance")]
+        public double live_balance { get; set; }
+
+
+        /// <summary>
         /// Gets or sets the collateral
         /// </summary>
         [DataMember(Name = "collateral")]
@@ -139,5 +150,17 @@ namespace KiteConnectAPI
         /// </summary>
         [DataMember(Name = "payout")]
         public double payout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the liquid collateral
+        /// </summary>
+        [DataMember(Name = "liquid_collateral")]
+        public double liquid_collateral { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stock collateral
+        /// </summary>
+        [DataMember(Name = "stock_collateral")]
+        public double stock_collateral { get; set; }
     }
 }

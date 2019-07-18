@@ -49,7 +49,7 @@ namespace KiteConnection
                 DateTime time = GetTime(l2.TimeStamp);
 
                 DateTime ltt = GetTime(l2.LastTradedTime);
-                
+
 
                 if (this.open != l2.OpenPrice)
                 {

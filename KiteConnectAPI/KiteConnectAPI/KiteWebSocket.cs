@@ -46,7 +46,15 @@ namespace KiteConnectAPI
 
             if (this.reconnectionAttempts++ >= this.maxReconnectionAttempts)
             {
-                await this.DisconnectAsync().ConfigureAwait(false);
+                try
+                {
+                    this.logger?.OnLog($"Max reconnection attempts ({this.maxReconnectionAttempts}) reached. Disconnecting ....");
+                }
+                catch (Exception ex)
+                {
+
+                }
+                await this.DisconnectAsync(KiteConnectState.ConnectionFailed).ConfigureAwait(false);
                 return;
             }
             if (this.isConnecting)
@@ -56,6 +64,19 @@ namespace KiteConnectAPI
 
             if (this.isDisconnected)
                 return;
+
+            if (this.webSocket != null)
+            {
+                this.webSocket.Opened -= WebSocket_Opened;
+                this.webSocket.Closed -= WebSocket_Closed;
+                this.webSocket.DataReceived -= WebSocket_DataReceived;
+                this.webSocket.MessageReceived -= WebSocket_MessageReceived;
+                this.webSocket.Error -= WebSocket_Error;
+
+                this.webSocket.Dispose();
+                this.webSocket = null;
+            }
+
 
             this.webSocket = new WebSocket(Url.Websocket(this.apiKey, this.accessToken, this.publicToken)); // ($"wss://ws.kite.trade?api_key={this.apiKey}&access_token={this.accessToken}&public_token={this.publicToken}");
             this.webSocket.Opened += WebSocket_Opened;
@@ -67,12 +88,19 @@ namespace KiteConnectAPI
             
         }
 
-
-        public override async Task DisconnectAsync()
+        private async Task DisconnectAsync(KiteConnectState state)
         {
             this.isDisconnected = true;
             this.isConnecting = false;
             this.webSocket?.Close();
+
+            //notify the clients
+            OnState(state);
+        }
+
+        public override async Task DisconnectAsync()
+        {
+            await DisconnectAsync(KiteConnectState.Disconnected).ConfigureAwait(false);
         }
 
         private void WebSocket_Error(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
@@ -123,29 +151,32 @@ namespace KiteConnectAPI
             {
 
             }
-            if (this.timer != null)
+
+            System.Timers.Timer timer = this.timer;
+            if (timer != null)
             {
-                this.timer.Elapsed -= Timer_Elapsed;
-                this.timer.Dispose();
+                timer.Elapsed -= Timer_Elapsed;
+                timer.Dispose();
                 this.timer = null;
             }
-            
-            if (this.webSocket != null)
-            {
-                this.webSocket.Opened -= WebSocket_Opened;
-                this.webSocket.Closed -= WebSocket_Closed;
-                this.webSocket.DataReceived -= WebSocket_DataReceived;
-                this.webSocket.MessageReceived -= WebSocket_MessageReceived;
-                this.webSocket.Error -= WebSocket_Error;
 
-                this.webSocket.Dispose();
+
+            WebSocket webSocket = this.webSocket;
+
+            if (webSocket != null)
+            {
+                webSocket.Opened -= WebSocket_Opened;
+                webSocket.Closed -= WebSocket_Closed;
+                webSocket.DataReceived -= WebSocket_DataReceived;
+                webSocket.MessageReceived -= WebSocket_MessageReceived;
+                webSocket.Error -= WebSocket_Error;
+
+                webSocket.Dispose();
                 this.webSocket = null;
             }
-            if (this.isDisconnected)
-            {
-                OnState(KiteConnectState.Disconnected);
-            }
-            else
+                
+            
+            if (!this.isDisconnected)
             {
                 await this.ConnectAsync().ConfigureAwait(false);
             }
@@ -209,8 +240,10 @@ namespace KiteConnectAPI
                 }
 
                 this.webSocket?.Close();
-
-                
+                if (!this.isDisconnected)
+                {
+                    OnState(KiteConnectState.ConnectionLost);
+                }
 
             }
         }
@@ -346,58 +379,75 @@ namespace KiteConnectAPI
             }
 
 
-            Message<object[]> modeMsg = new Message<object[]>()
+            try
             {
-                a = Message.mode,
-                v = new object[] { mode, tokens }
-            };
+                this.logger?.OnLog(actionString);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
 
 
             string modeMsgString = string.Empty;
 
-            try
+            if (isSubscribe)
             {
-                modeMsgString = modeMsg.Serialize();
-            }
-            catch (Exception ex)
-            {
+                Message<object[]> modeMsg = new Message<object[]>()
+                {
+                    a = Message.mode,
+                    v = new object[] { mode, tokens }
+                };
+
                 try
                 {
-                    this.logger?.OnException(ex);
+                    modeMsgString = modeMsg.Serialize();
                 }
-                catch (Exception ex1)
+                catch (Exception ex)
                 {
+                    try
+                    {
+                        this.logger?.OnException(ex);
+                    }
+                    catch (Exception ex1)
+                    {
 
+                    }
+                    return;
                 }
-                return;
-            }
 
-            if (string.IsNullOrEmpty(modeMsgString))
-            {
+                if (string.IsNullOrEmpty(modeMsgString))
+                {
+                    try
+                    {
+                        this.logger?.OnException(new ArgumentNullException("Mode json string is null"));
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                    return;
+                }
+
+
                 try
                 {
-                    this.logger?.OnException(new ArgumentNullException("Mode json string is null"));
+                    this.logger?.OnLog(modeMsgString);
                 }
                 catch (Exception ex)
                 {
 
                 }
-                return;
-            }
-
-            try
-            {
-                this.logger?.OnLog(modeMsgString);
-            }
-            catch (Exception ex)
-            {
-
             }
 
             try
             {
                 this.webSocket.Send(actionString);
-                this.webSocket.Send(modeMsgString);
+                if (isSubscribe)
+                {
+                    this.webSocket.Send(modeMsgString);
+                }
             }
             catch (Exception ex)
             {

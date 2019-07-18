@@ -57,6 +57,11 @@ namespace KiteConnectAPI
                         isWeekly = true;
                         return ParseSymbol(tradingSymbol, @"\d{2}(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)FUTW\d{1}$");
                     }
+                    else if (Regex.IsMatch(tradingSymbol, @"\d{2}\w{1}\d{2}(\d+\.\d+|\d+)(CE|PE|CA|PA)$"))
+                    {
+                        isWeekly = true;
+                        return ParseSymbol(tradingSymbol, @"\d{2}\w{1}\d{2}(\d+\.\d+|\d+)(CE|PE|CA|PA)$");
+                    }
                     else if (Regex.IsMatch(tradingSymbol, @"\d{2}(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(\d+\.\d+|\d+)(CE|PE|CA|PA)W\d{1}$"))
                     {
                         isWeekly = true;

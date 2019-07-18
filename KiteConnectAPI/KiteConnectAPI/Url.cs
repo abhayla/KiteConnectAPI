@@ -37,7 +37,8 @@ namespace KiteConnectAPI
         /// <returns></returns>
         public static string Login(string apiKey, string version)
         {
-            return $"{Root}/connect/login?v={version}&api_key={apiKey}";
+            return $"https://kite.trade/connect/login?v={version}&api_key={apiKey}";
+            //return $"{Root}/connect/login?v={version}&api_key={apiKey}";
         }
 
         /// <summary>

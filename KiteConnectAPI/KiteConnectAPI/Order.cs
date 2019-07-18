@@ -54,7 +54,7 @@ namespace KiteConnectAPI
     /// <summary>
     /// Gets or sets the exchange generated order id. Orders that don’t reach the exchange have null ids
     /// </summary>
-    [DataMember(Name = "exchange_order_id")]
+        [DataMember(Name = "exchange_order_id")]
         public string exchange_order_id { get; set; }
 
         /// <summary>
@@ -110,6 +110,12 @@ namespace KiteConnectAPI
         /// </summary>
         [DataMember(Name = "status_message")]
         public string status_message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw status message
+        /// </summary>
+        [DataMember(Name = "status_message_raw")]
+        public string status_message_raw { get; set; }
 
         /// <summary>
         /// Gets or sets the current status of the order. Most common values or COMPLETE, REJECTED, CANCELLED, and OPEN. There may be other values as well.
@@ -181,6 +187,12 @@ namespace KiteConnectAPI
         public string exchange_timestamp { get; set; }
 
         /// <summary>
+        /// Gets or sets the exchange update timestamp
+        /// </summary>
+        [DataMember(Name = "exchange_update_timestamp")]
+        public string exchange_update_timestamp { get; set; }
+
+        /// <summary>
         /// Gets or sets the average price at which the order was executed (only for COMPLETE orders)
         /// </summary>
         [DataMember(Name = "average_price")]
@@ -211,6 +223,12 @@ namespace KiteConnectAPI
         /// </summary>
         [DataMember(Name = "quantity")]
         public int quantity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the guid
+        /// </summary>
+        [DataMember(Name = "guid")]
+        public string guid { get; set; }
 
 
         public override string ToString()

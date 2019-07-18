@@ -99,7 +99,7 @@
                         <DataGridTextColumn Header="Filled Quantity" Binding="{Binding quantity}" />
                         <DataGridTextColumn Header="Avg Fill Price" Binding="{Binding average_price}" />
                         <DataGridTextColumn Header="Product" Binding="{Binding product}" />
-                        <DataGridTextColumn Header="Time" Binding="{Binding order_timestamp}" />
+                        <DataGridTextColumn Header="Time" Binding="{Binding fill_timestamp}" />
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -121,6 +121,7 @@
                             <DataGridTextColumn Header="Avg Fill Price" Binding="{Binding average_price, StringFormat=0.######}" />
                             <DataGridTextColumn Header="Product" Binding="{Binding product}" /> 
                             <DataGridTextColumn Header="Realized PnL" Binding="{Binding realised}" />
+                            <DataGridTextColumn Header="Unrealized PnL" Binding="{Binding unrealised}" />
                         </DataGrid.Columns>
                     </DataGrid>
 
@@ -153,9 +154,25 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Segment" Binding="{Binding Segment}" />
                         <DataGridTextColumn Header="Net" Binding="{Binding Funds.net}" />
-                        <DataGridTextColumn Header="Cash" Binding="{Binding Funds.available.cash}" />
-                        <DataGridTextColumn Header="Realized PnL" Binding="{Binding Funds.utilised.m2m_realised}" />
                         
+                        <DataGridTextColumn Header="Opening Balance" Binding="{Binding Funds.available.opening_balance}" />
+                        <DataGridTextColumn Header="Live Balance" Binding="{Binding Funds.available.live_balance}" />
+                        <DataGridTextColumn Header="Cash" Binding="{Binding Funds.available.cash}" />
+                        <DataGridTextColumn Header="Adhoc Margin" Binding="{Binding Funds.available.adhoc_margin}" />
+                        <DataGridTextColumn Header="Collateral" Binding="{Binding Funds.available.collateral}" />
+                        <DataGridTextColumn Header="Intraday Payin" Binding="{Binding Funds.available.intraday_payin}" />
+
+                        <DataGridTextColumn Header="Debits" Binding="{Binding Funds.utilised.debits}" />
+                        <DataGridTextColumn Header="Exposure" Binding="{Binding Funds.utilised.exposure}" />
+                        <DataGridTextColumn Header="M2M Realized" Binding="{Binding Funds.utilised.m2m_realised}" />
+                        <DataGridTextColumn Header="M2M Unrealised" Binding="{Binding Funds.utilised.m2m_unrealised}" />
+                        <DataGridTextColumn Header="Option Premium " Binding="{Binding Funds.utilised.option_premium}" />
+                        <DataGridTextColumn Header="Payout" Binding="{Binding Funds.utilised.payout}" />
+                        <DataGridTextColumn Header="Span" Binding="{Binding Funds.utilised.span}" />
+                        <DataGridTextColumn Header="Holding Sales " Binding="{Binding Funds.utilised.holding_sales}" />
+                        <DataGridTextColumn Header="Turnover" Binding="{Binding Funds.utilised.turnover}" />
+                        <DataGridTextColumn Header="Liquid Collateral " Binding="{Binding Funds.utilised.liquid_collateral}" />
+                        <DataGridTextColumn Header="Stock Collateral" Binding="{Binding Funds.utilised.stock_collateral}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

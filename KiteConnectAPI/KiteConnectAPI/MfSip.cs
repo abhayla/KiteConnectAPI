@@ -25,6 +25,12 @@ namespace KiteConnectAPI
         public string sip_id { get; set; }
 
         /// <summary>
+        /// Gets or sets the order id
+        /// </summary>
+        [DataMember(Name = "order_id")]
+        public string order_id { get; set; }
+
+        /// <summary>
         /// Gets or sets the trading symbol
         /// </summary>
         [DataMember(Name = "tradingsymbol")]

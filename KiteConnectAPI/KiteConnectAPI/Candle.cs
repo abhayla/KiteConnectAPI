@@ -30,7 +30,7 @@ namespace KiteConnectAPI
         /// Gets or sets the candle array
         /// </summary>
         [DataMember(Name = "candles")]
-        public string[,] candles { get; set; }
+        public string[][] candles { get; set; }
 
     }
 }

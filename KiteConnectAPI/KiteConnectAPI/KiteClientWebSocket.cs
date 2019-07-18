@@ -470,59 +470,76 @@ namespace KiteConnectAPI
                 return;
             }
 
-
-            Message<object[]> modeMsg = new Message<object[]>()
+            try
             {
-                a = Message.mode,
-                v = new object[] { mode, tokens }
-            };
+                this.logger?.OnLog(actionString);
+            }
+            catch (Exception ex)
+            {
+
+            }
 
 
             string modeMsgString = string.Empty;
 
-            try
+            if (isSubscribe)
             {
-                modeMsgString = modeMsg.Serialize();
-            }
-            catch (Exception ex)
-            {
+                Message<object[]> modeMsg = new Message<object[]>()
+                {
+                    a = Message.mode,
+                    v = new object[] { mode, tokens }
+                };
+
+
+
+
                 try
                 {
-                    this.logger?.OnException(ex);
+                    modeMsgString = modeMsg.Serialize();
                 }
-                catch (Exception ex1)
+                catch (Exception ex)
                 {
+                    try
+                    {
+                        this.logger?.OnException(ex);
+                    }
+                    catch (Exception ex1)
+                    {
 
+                    }
+                    return;
                 }
-                return;
-            }
 
-            if (string.IsNullOrEmpty(modeMsgString))
-            {
+                if (string.IsNullOrEmpty(modeMsgString))
+                {
+                    try
+                    {
+                        this.logger?.OnException(new ArgumentNullException("Mode json string is null"));
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                    return;
+                }
+
                 try
                 {
-                    this.logger?.OnException(new ArgumentNullException("Mode json string is null"));
+                    this.logger?.OnLog(modeMsgString);
                 }
                 catch (Exception ex)
                 {
 
                 }
-                return;
-            }
-
-            try
-            {
-                this.logger?.OnLog(modeMsgString);
-            }
-            catch (Exception ex)
-            {
-
             }
 
             try
             {
                 await this.socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(actionString)), WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false); //send the subscription msg
-                await this.socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(modeMsgString)), WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false); //send the mode msg
+                if (isSubscribe)
+                {
+                    await this.socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(modeMsgString)), WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false); //send the mode msg
+                }
             }
             catch (Exception ex)
             {

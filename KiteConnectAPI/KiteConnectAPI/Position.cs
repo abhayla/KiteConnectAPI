@@ -50,13 +50,7 @@ namespace KiteConnectAPI
         [DataMember(Name = "last_price")]
         public double last_price { get; set; }
 
-        /// <summary>
-        /// Gets or sets the net buy amount m2m
-        /// </summary>
-        [DataMember(Name = "net_buy_amount_m2m")]
-        public double net_buy_amount_m2m { get; set; }
-
-
+       
         /// <summary>
         /// Gets or sets the exchange tradingsymbol of the instrument
         /// </summary>
@@ -87,13 +81,7 @@ namespace KiteConnectAPI
         [DataMember(Name = "buy_value")]
         public double buy_value { get; set; }
 
-
-        /// <summary>
-        /// Gets or sets the net sell amount m2m
-        /// </summary>
-        [DataMember(Name = "net_sell_amount_m2m")]
-        public double net_sell_amount_m2m { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the average price at which the net position quantity was acquired
         /// </summary>

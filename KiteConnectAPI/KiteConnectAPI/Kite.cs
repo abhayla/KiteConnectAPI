@@ -307,7 +307,7 @@ namespace KiteConnectAPI
                 
                 //using dataContractSerializer
                 DataContractJsonSerializer serializer = null;
-                if (true)
+                if (isDictionary)
                 {
                     
                     serializer = new DataContractJsonSerializer(typeof(T), new DataContractJsonSerializerSettings()

@@ -38,9 +38,10 @@ namespace TestApp
     /// </summary>
     public partial class MainWindow : Window, IKiteLogger, INotifyPropertyChanged
     {
-        private const string apiKey = "enter api key";
-        private const string secret = "enter api secret";
+        private const string apiKey = "append your api key";
+        private const string secret = "append your api secret";
 
+        StreamWriter writer = new StreamWriter("Logs.txt", true);
 
         public event PropertyChangedEventHandler PropertyChanged;
         
@@ -88,7 +89,7 @@ namespace TestApp
 
 
         private Kite kite;
-        private Login login;
+        private Token login;
 
         private void Log(string msg, [CallerMemberName]string methodName = null)
         {
@@ -98,6 +99,10 @@ namespace TestApp
             if (this.Dispatcher.CheckAccess())
             {
                 this.Logs.Add($"{methodName}: {msg}");
+
+                writer?.WriteLine($"{DateTime.Now} : {msg}");
+                writer?.Flush();
+
             }
             else
             {
@@ -132,7 +137,9 @@ namespace TestApp
             if (obj == null || obj.Uri == null || string.IsNullOrEmpty(obj.Uri.AbsoluteUri))
                 return;
 
-            if (obj.Uri.AbsoluteUri.Contains("127.0.0.1"))
+            Log(obj.Uri.AbsoluteUri);
+
+            if (obj.Uri.AbsoluteUri.Contains("127.0.0.1") || obj.Uri.AbsoluteUri.Contains("localhost"))
             {
 
                 obj.Cancel = true;
@@ -152,11 +159,11 @@ namespace TestApp
             string requestToken, checkSum;
             if (!Kite.IsValidLogin(absoluteUri, apiKey, secret, out requestToken, out checkSum))
             {
-                this.OnLog("Failed to validate");
+                this.OnLog("********************* Failed to validate ***********************");
                 return;
             }
 
-            this.login = Kite.Post<Login>(string.Empty, string.Empty, KiteConnectAPI.Url.Token(), payload: Payload.Token(apiKey, requestToken, checkSum), logger: this);
+            this.login = Kite.Post<Token>(string.Empty, string.Empty, KiteConnectAPI.Url.Token(), payload: Payload.Token(apiKey, requestToken, checkSum), logger: this);
 
             if (this.login == null)
             {
@@ -208,6 +215,7 @@ namespace TestApp
             if (this.ConnectStr == "Connect")
             {
                 this.kite = new KiteWebSocket(apiKey, this.login.access_token, login.public_token, maxReconnectionAttempts: 20, logger: this);
+                //this.kite = new KiteClientWebSocket(apiKey, this.login.access_token, logger: this);
                 this.kite.State += OnConnectionState;
                 this.kite.Quotes += OnQuotes;
                 this.kite.Postback += OnPostback;
@@ -253,7 +261,7 @@ namespace TestApp
                 Level2 l2 = quotes[i] as Level2;
                 if (l2 == null)
                     continue;
-                Log($"LTT= {l2.LastTradedTime}, TimeStamp= {l2.TimeStamp}");
+                Log($"LTT= {l2.LastTradedTime}, TimeStamp= {l2.TimeStamp} LTP={l2.LastTradedPrice}");
             }
 
 
@@ -267,10 +275,15 @@ namespace TestApp
 
         private void Button_SubscribeRT(object sender, RoutedEventArgs e)
         {
-            this.kite?.Subscribe("full", new int[] { 738561 }); //Reliance
-            //this.kite.Subscribe("quote", new int[] { 53767943, 53490183 }); //Crude, Silver
+            this.kite?.Subscribe(Message.full, new int[] { 738561 }); //Reliance
         }
 
+        private void Button_Unsubscribe(object sender, RoutedEventArgs e)
+        {
+            this.kite?.Unsubscribe(Message.full, new int[] { 738561 });
+        }
+
+        //Get Metrics
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (this.login == null)
@@ -304,7 +317,7 @@ namespace TestApp
                 tag = tag.Substring(0, 8);
             }
 
-            string payload = Payload.PlaceOrder("NSE", "RELIANCE", "BUY", "LIMIT", "MIS", 1, 970.0d, 0.0d);
+            string payload = Payload.PlaceOrder("NSE", "RELIANCE", "BUY", "LIMIT", "MIS", 1, 1225.0d, 0.0d);
             this.orderId = Kite.Post<OrderId>(apiKey, login.access_token, KiteConnectAPI.Url.PlaceOrder(), payload, logger: this);
 
         }
@@ -314,7 +327,7 @@ namespace TestApp
             if (this.login == null || this.orderId == null)
                 return;
 
-            string payload = Payload.ModifyOrder("LIMIT", 2, 965.0d, 0.0d);
+            string payload = Payload.ModifyOrder("LIMIT", 2, 520.0d, 0.0d);
             OrderId response = Kite.Put<OrderId>(apiKey, login.access_token, Url.PlaceOrder(orderId: this.orderId.order_id), payload: payload, logger: this);
             Log($"modify: {response?.order_id}");
         }
@@ -328,5 +341,7 @@ namespace TestApp
             Log($"cancel: {response?.order_id}");
             
         }
+
+        
     }
 }

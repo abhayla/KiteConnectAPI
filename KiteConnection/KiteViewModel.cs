@@ -33,30 +33,29 @@ namespace KiteConnection
 
         //connection Options
         string apiKey, secret;
-        bool canDownloadSymbols = false;
         bool isHistoricalDataSubscribed;
+        int maxReconnectionAttempts = 20;
         //
 
         TimeSpan timeZoneOffset = TimeSpan.Zero;
         KiteConnectConnection connection;
         Kite kite;
-        Login login;
+        Token login;
 
         Dictionary<string, IOrder> orders;
-        List<Instrument> level1Subscriptions;
         Dictionary<uint, KiteQuotes> quotes; 
         Dictionary<string, List<KiteConnectAPI.Symbol>> symbols;
         List<string> trades;
 
         System.Windows.Threading.Dispatcher dispatcher;
-        public KiteViewModel(KiteConnectConnection connection, string apiKey, string secret, bool isHistoricalDataSubscribed, bool canDownloadSymbols)
+        public KiteViewModel(KiteConnectConnection connection, string apiKey, string secret, bool isHistoricalDataSubscribed, int maxReconnectionAttempts)
         {
             this.dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
             this.connection = connection;
-            this.canDownloadSymbols = canDownloadSymbols;
             this.apiKey = apiKey;
             this.isHistoricalDataSubscribed = isHistoricalDataSubscribed;
             this.secret = secret;
+            this.maxReconnectionAttempts = maxReconnectionAttempts;
 
             this.ClosingCommand = new RelayCommand<CancelEventArgs>(OnClosing);
             this.ClosedCommand = new RelayCommand(OnClosed);
@@ -103,16 +102,37 @@ namespace KiteConnection
 
             lock (orderLocker)
             {
-                if (this.level1Subscriptions.Contains(instrument))
+                if (this.quotes.TryGetValue((uint)token, out KiteQuotes q))
                     return;
 
-                this.level1Subscriptions.Add(instrument);
                 this.quotes.Add((uint)token, new KiteQuotes(instrument, symbol));
-
             }
 
 
             await kite.Subscribe(KiteConnectAPI.Message.full, new int[] { token }).ConfigureAwait(false);
+        }
+
+        public async Task UnsubscribeLevel1(Instrument instrument)
+        {
+
+            Symbol symbol = FromInstrument(instrument);
+            if (symbol == null)
+                throw new Exception($"No symbol found for instrument {instrument.DisplayName}");
+
+            if (!int.TryParse(symbol.instrument_token, NumberStyles.Any, CultureInfo.InvariantCulture, out int token))
+                throw new Exception($"Failed to parse token for symbol {symbol.tradingsymbol}|{symbol.exchange}");
+
+
+            lock (orderLocker)
+            {
+                if (this.quotes.TryGetValue((uint)token, out KiteQuotes q))
+                { 
+                    this.quotes.Remove((uint)token);
+                }
+                else return;
+            }
+
+            this.kite?.Unsubscribe(KiteConnectAPI.Message.full, new int[] { token });
         }
 
         public async Task SubscribeHistoricalData(Instrument instrument, BuiltDataType builtDataType, BackfillPolicy backfillPolicy, DateTime startDate, DateTime endDate)
@@ -142,40 +162,41 @@ namespace KiteConnection
                     throw new Exception($"DataType {builtDataType} not supported");
             }
 
+            
+
             Candle candle = Kite.Get<Candle>(this.apiKey, this.login.access_token, KiteConnectAPI.Url.Candles(token, interval, startDate, endDate,
-                backfillPolicy == BackfillPolicy.Continuous && instrument.InstrumentDefination.InstrumentType == InstrumentType.Futures));
+                backfillPolicy == BackfillPolicy.Continuous && instrument.InstrumentDefination.InstrumentType == InstrumentType.Futures), logger: this.connection);
+
+            
 
             if (candle == null)
             {
-                throw new Exception($"No data found for instrument {instrument}");
+                throw new Exception($"Failed to get data for instrument {instrument.DisplayName}");
             }
 
-            for (int i = 0; i < candle.candles.GetLength(0); i++)
+            foreach (var array in candle.candles)
             {
-                DateTime date;
-                if (!DateTime.TryParse(candle.candles[i, 0], System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out date))
+                if (array == null || array.Length != 6)
+                    continue;
+
+                if (!DateTime.TryParse(array[0], System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime date))
                     continue;
 
                 date = date.Add(this.timeZoneOffset);
 
-                double open;
-                if (!double.TryParse(candle.candles[i, 1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out open))
+                if (!double.TryParse(array[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double open))
                     continue;
 
-                double high;
-                if (!double.TryParse(candle.candles[i, 2], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out high))
+                if (!double.TryParse(array[2], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double high))
                     continue;
 
-                double low;
-                if (!double.TryParse(candle.candles[i, 3], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out low))
+                if (!double.TryParse(array[3], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double low))
                     continue;
 
-                double close;
-                if (!double.TryParse(candle.candles[i, 4], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out close))
+                if (!double.TryParse(array[4], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double close))
                     continue;
 
-                int volume;
-                if (!int.TryParse(candle.candles[i, 5], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out volume))
+                if (!int.TryParse(array[5], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int volume))
                     continue;
 
 
@@ -189,13 +210,10 @@ namespace KiteConnection
                 }
             }
 
-            //and notify
-            ExternalConnectionBase.NotifyHistoricalDataDownloadEnd(instrument, builtDataType, backfillPolicy, startDate, endDate);
-
+            
         }
 
-        /*
-         * Deferred for next release
+        
         public async Task<StaticQuote> GetSnapQuote(Instrument instrument)
         {
             if (instrument == null)
@@ -217,54 +235,20 @@ namespace KiteConnection
                 if (q == null)
                     return null;
 
-                StaticQuote quote = new StaticQuote()
+                StaticQuote quote = new KiteStaticQuotes()
                 {
                     LastTradedPrice = q.last_price,
-                    Open = q.ohlc.open,
-                    High = q.ohlc.high,
-                    Low = q.ohlc.low,
-                    PreviousClose = q.ohlc.close,
+                    Open = q.ohlc == null ? 0.0d : q.ohlc.open,
+                    High = q.ohlc == null ? 0.0d : q.ohlc.high,
+                    Low = q.ohlc == null ? 0.0d : q.ohlc.low,
+                    PreviousClose = q.ohlc == null ? 0.0d : q.ohlc.close,
                     VWAP = q.average_price,
                     TotalVolume = q.volume,
                     OpenInterest = (int)q.oi,
                     LastTradedTime = this.ParseTime(q.timestamp),
+                    LastTraderQuantity = q.last_quantity,
+                    Quotes = q
                 };
-
-                DepthItem[] bids = q.depth.buy;
-
-                if (bids != null)
-                {
-                    quote.BidPrices = new double[bids.Length];
-                    quote.BidVolumes = new int[bids.Length];
-
-                    for (int i = 0; i < bids.Length; i++)
-                    {
-                        if (bids[i] == null)
-                            continue;
-
-                        quote.BidPrices[i] = bids[i].price;
-                        quote.BidVolumes[i] = bids[i].quantity;
-                    }
-                }
-
-
-                DepthItem[] asks = q.depth.sell;
-
-                if (asks != null)
-                {
-                    quote.AskPrices = new double[asks.Length];
-                    quote.AskVolumes = new int[asks.Length];
-
-                    for (int i = 0; i < asks.Length; i++)
-                    {
-                        if (asks[i] == null)
-                            continue;
-
-                        quote.AskPrices[i] = asks[i].price;
-                        quote.AskVolumes[i] = asks[i].quantity;
-                    }
-                }
-
 
                 return quote;
             }
@@ -272,7 +256,7 @@ namespace KiteConnection
             return null;
 
         }
-        */
+        
 
         public async Task SubmitOrder(IOrder order)
         {
@@ -453,7 +437,7 @@ namespace KiteConnection
             this.IsBusy = true;
             this.BusyText = "Fetching token ....";
 
-            this.login = Kite.Post<Login>(string.Empty, string.Empty, KiteConnectAPI.Url.Token(), payload: Payload.Token(this.apiKey, requestToken, checkSum), logger: this.connection);
+            this.login = Kite.Post<Token>(string.Empty, string.Empty, KiteConnectAPI.Url.Token(), payload: Payload.Token(this.apiKey, requestToken, checkSum), logger: this.connection);
 
             if (this.login == null)
             {
@@ -506,7 +490,6 @@ namespace KiteConnection
             this.symbols = new Dictionary<string, List<Symbol>>();
             this.trades = new List<string>();
             this.quotes = new Dictionary<uint, KiteQuotes>();
-            this.level1Subscriptions = new List<Instrument>();
 
             this.timeZoneOffset = SharpCharts.Base.Common.Globals.GetTimeZoneOffset(SharpCharts.Base.Common.TimeZone.IndiaStandardTime);
 
@@ -534,7 +517,7 @@ namespace KiteConnection
                 GetFunds();
 
                 this.BusyText = "Connecting to Kite sockets ....";
-                this.kite = new KiteWebSocket(this.apiKey, this.login?.access_token, this.login?.public_token, logger: this.connection);
+                this.kite = new KiteWebSocket(this.apiKey, this.login?.access_token, this.login?.public_token, maxReconnectionAttempts: this.maxReconnectionAttempts, logger: this.connection);
                 this.kite.State += Kite_State;
                 this.kite.Quotes += Kite_Quotes;
                 this.kite.Postback += Kite_Postback;
@@ -544,6 +527,7 @@ namespace KiteConnection
 
         }
 
+       
         private void Kite_Postback(PostbackEventArgs args)
         {
             
@@ -577,7 +561,7 @@ namespace KiteConnection
 
             if (order != null)
             {
-
+                
                 if (!isAddedToList && args.Order.status == "UPDATE" && order.FilledQuantity > ToQuantity(args.Order.filled_quantity, symbol.lot_size))
                     return;
 
@@ -588,7 +572,8 @@ namespace KiteConnection
                 //Order may get filled, however an stale postback may come through
                 if (!isAddedToList && order.IsClosed)
                     return;
-                               
+                
+                
                 OrderState orderState = ToOrderState(args.Order.status, args.Order.filled_quantity);
                 ExternalConnectionBase.UpdateOrder(order, ParseTime(args.Order.order_timestamp), orderState, ToQuantity(args.Order.filled_quantity, symbol.lot_size),
                     ToQuantity(args.Order.pending_quantity, symbol.lot_size), args.Order.price, args.Order.trigger_price, args.Order.average_price, isAddedToList, false);
@@ -711,6 +696,12 @@ namespace KiteConnection
             if (string.IsNullOrEmpty(exchange))
                 return;
 
+            Exchange ex = ToExchange(exchange);
+            if (!Enum.IsDefined(typeof(Exchange), ex) || ex == Exchange.Unknown)
+            {
+                return;
+            }
+
             Dictionary<string, List<Symbol>> tmp = this.symbols;
             if (tmp == null)
                 return;
@@ -724,10 +715,15 @@ namespace KiteConnection
 
 
             string filename = $"{SharpFolder.Misc}Kite_{exchange}.csv";
-            if (!this.canDownloadSymbols && File.Exists(filename))
-            {
-                this.connection.OnLog($"Reading symbol for exchange {exchange}");
 
+            bool canDownloadSymbol = File.Exists(filename) && File.GetLastWriteTime(filename).Add(this.timeZoneOffset).Date != DateTime.Now.Add(this.timeZoneOffset).Date;
+
+
+            //if (!this.canDownloadSymbols && File.Exists(filename))
+            if (!canDownloadSymbol)
+            {
+
+                this.connection.OnLog($"Reading symbol for exchange {exchange}");
 
                 using (StreamReader reader = new StreamReader(filename))
                 {
@@ -896,7 +892,10 @@ namespace KiteConnection
                 string optionType = FromOptionType(instrument.OptionType);
                 if (instrument.InstrumentDefination.IsWeeklyContract)
                 {
-                    symbol = string.Format(CultureInfo.InvariantCulture, "{0}{1:ddMMMyy}{2}{3}", symbol, instrument.ExpiryDate, instrument.StrikePrice, optionType);
+                    symbol = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                               "{0}{1:yy}{2}{1:dd}{3}{4}", symbol, instrument.ExpiryDate, GetNSEOptionMonth(instrument.ExpiryDate), instrument.StrikePrice, optionType);
+
+                    //symbol = string.Format(CultureInfo.InvariantCulture, "{0}{1:ddMMMyy}{2}{3}", symbol, instrument.ExpiryDate, instrument.StrikePrice, optionType);
                 }
                 else
                 {
@@ -907,6 +906,20 @@ namespace KiteConnection
             
             return GetSymbol(exchange, symbol.ToUpper(), string.Empty);
         }
+
+
+        public string GetNSEOptionMonth(DateTime expiryDate)
+        {
+            if (expiryDate.Month < 10)
+            {
+                return expiryDate.Month.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                return expiryDate.ToString("MMM", System.Globalization.CultureInfo.InvariantCulture).Substring(0, 1).ToUpper();
+            }
+        }
+
 
         /// <summary>
         /// Gets the string payload of an order
@@ -1101,6 +1114,7 @@ namespace KiteConnection
                     return Exchange.BSE;
                 case "MCXSX":
                     return Exchange.MCXSX;
+                case "MF":  //mutual fund not supported
                 default:
                     return Exchange.Unknown;
             }
@@ -1211,9 +1225,15 @@ namespace KiteConnection
 
         private TimeInForce ToTimeInForce(string validity)
         {
+            if (string.IsNullOrEmpty(validity))
+                return TimeInForce.Unknown;
+
+            validity = validity.ToUpper();
+
             switch (validity)
             {
                 case "DAY":
+                case "EOS":
                     return TimeInForce.DAY;
                 case "IOC":
                     return TimeInForce.IOC;
@@ -1349,7 +1369,7 @@ namespace KiteConnection
 
         private void GetOrders()
         {
-            Login login = this.login;
+            Token login = this.login;
             if (login == null || string.IsNullOrEmpty(this.apiKey))
                 return;
 
@@ -1412,7 +1432,7 @@ namespace KiteConnection
 
         private void GetTrades()
         {
-            Login login = this.login;
+            Token login = this.login;
             if (login == null || string.IsNullOrEmpty(this.apiKey))
                 return;
 
@@ -1460,7 +1480,7 @@ namespace KiteConnection
                         return;
                     }
 
-                    ExternalConnectionBase.FillTrade(order, kTrade.trade_id, ParseTime(kTrade.order_timestamp), ToQuantity(kTrade.quantity, symbol.lot_size), kTrade.average_price);
+                    ExternalConnectionBase.FillTrade(order, kTrade.trade_id, ParseTime(kTrade.fill_timestamp), ToQuantity(kTrade.quantity, symbol.lot_size), kTrade.average_price);
                 }
             }
             
@@ -1468,7 +1488,7 @@ namespace KiteConnection
 
         private void GetPosition()
         {
-            Login login = this.login;
+            Token login = this.login;
             if (login == null || string.IsNullOrEmpty(this.apiKey))
                 return;
 
@@ -1521,7 +1541,7 @@ namespace KiteConnection
 
         private void GetHoldings()
         {
-            Login login = this.login;
+            Token login = this.login;
             if (login == null || string.IsNullOrEmpty(this.apiKey))
                 return;
 
@@ -1543,7 +1563,7 @@ namespace KiteConnection
 
         private void GetFunds()
         {
-            Login login = this.login;
+            Token login = this.login;
             if (login == null || string.IsNullOrEmpty(this.apiKey))
                 return;
 

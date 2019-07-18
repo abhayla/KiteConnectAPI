@@ -57,6 +57,7 @@
     <Compile Include="KFund.cs" />
     <Compile Include="KiteConnectConnection.cs" />
     <Compile Include="KiteQuotes.cs" />
+    <Compile Include="KiteStaticQuotes.cs" />
     <Compile Include="KiteView.xaml.cs">
       <DependentUpon>KiteView.xaml</DependentUpon>
     </Compile>

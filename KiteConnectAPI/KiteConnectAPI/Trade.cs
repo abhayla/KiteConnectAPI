@@ -63,8 +63,8 @@ namespace KiteConnectAPI
         /// <summary>
         /// Gets or sets the timestamp at which the order was registered by the API
         /// </summary>
-        [DataMember(Name = "order_timestamp")]
-        public string order_timestamp { get; set; }
+        [DataMember(Name = "fill_timestamp")]
+        public string fill_timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the exchange generated trade id
@@ -77,6 +77,12 @@ namespace KiteConnectAPI
         /// </summary>
         [DataMember(Name = "exchange_timestamp")]
         public string exchange_timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order timestamp
+        /// </summary>
+        [DataMember(Name = "order_timestamp")]
+        public string order_timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the price at which the was filled

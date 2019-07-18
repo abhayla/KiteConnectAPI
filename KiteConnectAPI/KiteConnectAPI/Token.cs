@@ -17,7 +17,7 @@ namespace KiteConnectAPI
 {
 
     [DataContract]
-    public class Login
+    public class Token : Profile
     {
         /*
             {"status": "success", "data": {
@@ -42,56 +42,6 @@ namespace KiteConnectAPI
         [DataMember(Name = "user_id")]
         public string user_id { get; set; }
 
-        /// <summary>
-        /// Gets or sets the user’s real name
-        /// </summary>
-        [DataMember(Name = "user_name")]
-        public string user_name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user short name
-        /// </summary>
-        [DataMember(Name = "user_shortname")]
-        public string user_shortname { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user email id
-        /// </summary>
-        [DataMember(Name = "email")]
-        public string email { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user’s registered role at the broker
-        /// </summary>
-        [DataMember(Name = "user_type")]
-        public string user_type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the broker
-        /// </summary>
-        [DataMember(Name = "broker")]
-        public string broker { get; set; }
-
-        /// <summary>
-        /// Gets or sets the exchanges enabled for trading on the user’s account
-        /// </summary>
-        [DataMember(Name = "exchanges")]
-        public string[] exchanges { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the order product types (margin related) enabled for the user
-        /// </summary>
-        [DataMember(Name = "products")]
-        public string[] products { get; set; }
-
-        
-
-        /// <summary>
-        /// Gets or sets the order types enabled for the user
-        /// </summary>
-        [DataMember(Name = "order_types")]
-        public string[] order_types { get; set; }
 
         /// <summary>
         /// Gets or sets the api key
@@ -131,4 +81,6 @@ namespace KiteConnectAPI
 
 
     }
+
+    
 }

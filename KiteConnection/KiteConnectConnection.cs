@@ -28,7 +28,7 @@ namespace SharpCharts.Base.Connection
            
             string apiKey, secret;
             bool isHistoricalDataSubscribed;
-            bool canDownloadSymbols;
+            int maxReconnectionAttempts = 20;
             try
             {
                 //cant reference the SharpCharts.User assembly as it is dynamically generated. 
@@ -37,7 +37,7 @@ namespace SharpCharts.Base.Connection
                 apiKey = options.ApiKey;
                 secret = options.Secret;
                 isHistoricalDataSubscribed = options.IsHistoricalDataSubscribed;
-                canDownloadSymbols = options.CanDownloadSymbols;
+                maxReconnectionAttempts = options.MaxReconnectionAttempts;
             }
             catch (Exception ex)
             {
@@ -55,7 +55,7 @@ namespace SharpCharts.Base.Connection
 
             System.Threading.Thread thread = new System.Threading.Thread(() =>
             {
-                this.DialogService.Show<KiteView>(this.viewModel = new KiteViewModel(this, apiKey, secret, isHistoricalDataSubscribed, canDownloadSymbols));
+                this.DialogService.Show<KiteView>(this.viewModel = new KiteViewModel(this, apiKey, secret, isHistoricalDataSubscribed, maxReconnectionAttempts));
                 try
                 {
                     System.Windows.Threading.Dispatcher.Run();
@@ -94,6 +94,14 @@ namespace SharpCharts.Base.Connection
             await this.viewModel.SubscribeLevel1(instrument).ConfigureAwait(false);
         }
 
+        public override async Task UnsubscribeLevel1(Instrument instrument)
+        {
+            if (this.viewModel == null)
+                return;
+
+            await this.viewModel.UnsubscribeLevel1(instrument).ConfigureAwait(false);
+        }
+
         public override async Task SubscribeHistoricalData(Instrument instrument, BuiltDataType builtDataType, BackfillPolicy backfillPolicy, DateTime startDate, DateTime endDate)
         {
             if (this.viewModel == null)
@@ -102,8 +110,7 @@ namespace SharpCharts.Base.Connection
             await this.viewModel.SubscribeHistoricalData(instrument, builtDataType, backfillPolicy, startDate, endDate).ConfigureAwait(false);
         }
 
-        /*
-         * Deferred till next release
+        
         public override async Task<StaticQuote> GetSnapQuote(Instrument instrument)
         {
             if (this.viewModel == null)
@@ -111,7 +118,7 @@ namespace SharpCharts.Base.Connection
 
             return await this.viewModel.GetSnapQuote(instrument).ConfigureAwait(false);
         }
-        */
+        
 
         public override bool IsOrderFeed
         {
